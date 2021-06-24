@@ -65,7 +65,9 @@ func TestGetAgenthandler(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, test.expectedStatusCode, response.StatusCode)
 		assert.Equal(t, test.expectedBody, response.Body)
-		assert.Equal(t, "superman", agent.AgentName)
+		if test.queryParametersExists == true {
+			assert.Equal(t, "superman", agent.AgentName)
+		}
 
 	}
 
