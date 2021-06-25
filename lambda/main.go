@@ -32,10 +32,17 @@ func NewLambdaHandler(opts ...func(*LambdaHandler)) (*LambdaHandler, error) {
 		return nil, errors.New("aws client init failed")
 	}
 
+	lh.gorillaMuxLambda = gorillamux.New(configRouter(lh))
+
+	return lh, nil
+}
+
+func configRouter(lh *LambdaHandler) *mux.Router {
 	r := mux.NewRouter()
 
 	//some sample route
 	r.HandleFunc("/agent", lh.getAgenthandler).Queries("agentname", "{agentname}").Methods(http.MethodGet)
+	r.HandleFunc("/agent", lh.getAgenthandler).Methods(http.MethodGet)
 
 	// R53 health check handler, this route must be outside of authentication
 	r.HandleFunc("/check", func(w http.ResponseWriter, r *http.Request) {
@@ -48,10 +55,7 @@ func NewLambdaHandler(opts ...func(*LambdaHandler)) (*LambdaHandler, error) {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, "{\"error\":\"page not found\"}")
 	}).Methods(http.MethodGet)
-
-	lh.gorillaMuxLambda = gorillamux.New(r)
-
-	return lh, nil
+	return r
 }
 
 // NewAWSClient initialises the required aws configurations
