@@ -36,5 +36,7 @@ project_name = "glt"
 api_domain_name = "api.somedomainame.dev"
 route53_zone_id = "Z0123456"
 
+# runtimes
+# https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
 lambda_runtime = "go1.x"
 lambda_timeout = 29

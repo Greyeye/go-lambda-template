@@ -21,19 +21,4 @@ data "aws_iam_policy_document" "apigateway_resource_policy" {
       identifiers = ["*"]
     }
   }
-
-  statement {
-    sid = "defaultallow"
-    actions = [
-      "execute-api:Invoke",
-    ]
-    principals {
-      type = "*"
-      identifiers = ["*"]
-    }
-    resources = [
-      "execute-api:/${var.environment}/*/*"
-    ]
-  }
-
 }

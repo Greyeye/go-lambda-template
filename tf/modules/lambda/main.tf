@@ -23,6 +23,4 @@ resource "aws_cloudwatch_log_group" "apiLambda" {
   retention_in_days = 7
 }
 
-# runtimes
-# https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
 

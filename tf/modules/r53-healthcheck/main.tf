@@ -2,7 +2,7 @@ resource "aws_route53_health_check" "checker" {
   fqdn              = var.apigw_host_name
   port              = 443
   type              = "HTTPS"
-  resource_path     = "${var.environment}/check"
+  resource_path     = "/${var.environment}/check"
   failure_threshold = "5"
   request_interval  = "30"
 
