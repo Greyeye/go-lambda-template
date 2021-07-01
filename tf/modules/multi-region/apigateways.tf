@@ -11,8 +11,8 @@ module "api" {
     Description = "api endpoint for ${var.lambda_name}"
   }
   environment = var.environment
-  apigateway_policy = data.aws_iam_policy_document.apigateway_resource_policy.json
   deploymentID = random_id.server.hex
   api_domain_name = var.api_domain_name
   acm_arn = var.acm_arn
+  aws_account_id = var.accountnumber
 }

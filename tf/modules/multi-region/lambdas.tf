@@ -36,7 +36,7 @@ module "lambda_function" {
   lambda_vpc_security_groups = [aws_security_group.allow_tls.id]
   lambda_vpc_subnet_ids = var.lambda_vpc_subnet_ids
   env_variables = var.env_variables
-  lambda_file_hash = module.dist_file.hash
+  lambda_file_hash = module.dist_file.filebase64sha256
   deploymentID = random_id.server.hex
   environment = var.environment
   lambda_timeout = var.lambda_timeout

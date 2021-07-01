@@ -4,7 +4,26 @@ resource "aws_api_gateway_rest_api" "apiLambda_private" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
-  policy = var.apigateway_policy
+}
+
+resource "aws_api_gateway_rest_api_policy" "apiLambda_private" {
+  rest_api_id = aws_api_gateway_rest_api.apiLambda_private.id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "execute-api:Invoke",
+      "Resource": "${aws_api_gateway_rest_api.apiLambda_private.execution_arn}"
+    }
+  ]
+}
+EOF
 }
 
 resource "aws_api_gateway_resource" "proxy" {

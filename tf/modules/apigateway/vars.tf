@@ -18,7 +18,6 @@ variable "aws_account_id" {}
 variable "environment" {
   default = "scaffolding_alias"
 }
-variable "apigateway_policy" {}
 
 variable "deploymentID" {
 
