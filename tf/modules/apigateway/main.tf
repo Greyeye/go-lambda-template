@@ -19,7 +19,7 @@ resource "aws_api_gateway_rest_api_policy" "apiLambda_private" {
         "AWS": "*"
       },
       "Action": "execute-api:Invoke",
-      "Resource": "${aws_api_gateway_rest_api.apiLambda_private.execution_arn}"
+      "Resource": "${aws_api_gateway_rest_api.apiLambda_private.execution_arn}/*"
     }
   ]
 }
