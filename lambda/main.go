@@ -41,8 +41,8 @@ func configRouter(lh *LambdaHandler) *mux.Router {
 	r := mux.NewRouter()
 
 	//some sample route
-	r.HandleFunc("/agent", lh.getAgenthandler).Queries("agentname", "{agentname}").Methods(http.MethodGet)
-	r.HandleFunc("/agent", lh.getAgenthandler).Methods(http.MethodGet)
+	r.HandleFunc("/agent", lh.getAgenthandler).Queries("agentname", "{agentname}").Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/agent", lh.getAgenthandler).Methods(http.MethodGet, http.MethodOptions)
 
 	// R53 health check handler, this route must be outside of authentication
 	r.HandleFunc("/check", func(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +55,8 @@ func configRouter(lh *LambdaHandler) *mux.Router {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, "{\"error\":\"page not found\"}")
 	}).Methods(http.MethodGet)
+
+	r.Use(mux.CORSMethodMiddleware(r))
 	return r
 }
 
