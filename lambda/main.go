@@ -2,23 +2,61 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/Greyeye/go-lambda-template/pkg/awsclient"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
+	InitLogger()
 	lh, err := NewLambdaHandler(NewAWSClient(context.Background()))
 	if err != nil {
-		log.Println(err)
+		logger.Error(err)
 		return
 	}
 	lambda.Start(lh.handler)
+}
+
+var logger *zap.SugaredLogger
+
+// InitLogger set up the zap log system.
+func InitLogger() {
+	// set env variable of LogLevel to debug/info/error
+	LogLevel := os.Getenv("LogLevel")
+	if LogLevel == "" {
+		LogLevel = "info"
+	}
+	rawJSON := []byte(`{
+	  "level": "` + LogLevel + `",
+	  "encoding": "json",
+	  "errorOutputPaths": ["stderr"],
+	  "outputPaths": ["stdout", "/dev/null"],
+	  "encoderConfig": {
+	    "messageKey": "message",
+	    "levelKey": "level",
+	    "levelEncoder": "lowercase"
+	  }
+	}`)
+
+	var cfg zap.Config
+	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+		panic(err)
+	}
+	initLogger, err := cfg.Build()
+	if err != nil {
+		panic(err)
+	}
+	logger = initLogger.Sugar()
+	defer logger.Sync()
+	logger.Debug("Debug Mode")
 }
 
 // NewLambdaHandler is a constructor to setup new lambda handler
