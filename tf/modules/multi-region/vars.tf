@@ -17,9 +17,7 @@ variable "lambda_dist_bucket" {
 variable "lambda_sg_name" {}
 variable "lambda_name" {}
 variable "lambda_dist_key" {}
-variable "vpc_id" {
-  default = "vpc-08789c303a76dcf84"
-}
+variable "vpc_id" {}
 variable "vpc_cidr"{}
 
 variable "acm_arn" {}
@@ -30,3 +28,4 @@ variable "lambda_policy" {}
 variable "env_variables" {}
 variable "lambda_runtime" {}
 variable "lambda_timeout" {}
+variable "lambda_architecture" {}

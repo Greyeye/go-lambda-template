@@ -36,3 +36,5 @@ variable "deploymentID" {
 
 variable "environment" {}
 variable "lambda_timeout" {}
+
+variable "lambda_architecture" {}

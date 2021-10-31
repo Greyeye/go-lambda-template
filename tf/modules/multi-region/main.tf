@@ -30,7 +30,7 @@ resource "aws_security_group" "allow_tls" {
   }
 }
 locals {
-  # don't include environment name, as tfvar should specify the environment name (eg mbp-development)
+  # don't include environment name, as tfvar should specify the environment name (eg projectname-development)
   bucket_name = "${var.lambda_dist_bucket}-${var.aws_region}-${var.environment}-${random_id.server.hex}"
 }
 
@@ -82,7 +82,7 @@ terraform {
   required_providers {
     aws = {
       source = "hashicorp/aws"
-      version = "~> 3.42.0"
+      version = "~> 3.61.0"
     }
   }
   required_version = ">= 0.14.8"

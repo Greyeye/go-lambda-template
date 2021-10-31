@@ -17,6 +17,7 @@ module "us-east-1" {
   lambda_runtime = var.lambda_runtime
   env_variables = local.env_variables
   lambda_timeout = var.lambda_timeout
+  lambda_architecture = var.lambda_architecture
 }
 
 module "us-west-2" {
@@ -41,6 +42,7 @@ module "us-west-2" {
   lambda_runtime = var.lambda_runtime
   env_variables = local.env_variables
   lambda_timeout = var.lambda_timeout
+  lambda_architecture = var.lambda_architecture
 }
 
 module "r53_healthcheck_useast1" {
@@ -49,6 +51,7 @@ module "r53_healthcheck_useast1" {
   apigw_host_name = module.us-east-1.apigw_host_name
   environment = var.environment
   deploymentID = module.us-east-1.random_hex
+  disabled = true
 }
 
 module "r53usest1" {
@@ -62,4 +65,5 @@ module "r53usest1" {
   deploymentID = module.us-east-1.random_hex
   healthcheckid = module.r53_healthcheck_useast1.healthcheckid
   healthcheckpriority = "PRIMARY"
+  api_domain_name = var.api_domain_name
 }

@@ -38,5 +38,6 @@ route53_zone_id = "Z0123456"
 
 # runtimes
 # https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
-lambda_runtime = "go1.x"
+lambda_runtime = "provided.al2"
 lambda_timeout = 29
+lambda_architecture = "arm64"

@@ -1,6 +1,6 @@
 resource "aws_route53_record" "useast1" {
   zone_id = var.route53_zone_id
-  name    = "api"
+  name    = var.api_domain_name
   type    = "A"
 
   alias {

@@ -8,3 +8,4 @@ variable healthcheckpriority {}
 variable healthcheckid {
   default = null
 }
+variable api_domain_name {}

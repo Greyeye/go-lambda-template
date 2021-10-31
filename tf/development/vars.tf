@@ -24,8 +24,8 @@ variable "lambda_dist_bucket" {
 
 variable "lambda_dist_key" {
   description = "lambda source code file name in S3 bucket"
-  default = "mbp-development/dist/lambda.zip"
 }
+
 variable "vpc_id" {
   description = "VPC ID for lambda to execute"
   type = object({
@@ -54,7 +54,7 @@ variable "acm_arns" {
 }
 
 variable "api_domain_name" {
-  description = "DNS name to use for the MBP service"
+  description = "DNS name to use for the API gateway"
 }
 
 variable "route53_zone_id" {
@@ -74,4 +74,8 @@ variable "lambda_runtime" {
 
 variable "lambda_timeout" {
   description = "maximum time lambda is allowed to run. If its running behind an API Gateway, timeout should not excees 29secs"
+}
+
+variable "lambda_architecture" {
+  description = "set lambda run time architectures. Use arm64, amd64"
 }

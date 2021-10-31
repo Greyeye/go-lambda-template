@@ -40,6 +40,7 @@ module "lambda_function" {
   deploymentID = random_id.server.hex
   environment = var.environment
   lambda_timeout = var.lambda_timeout
+  lambda_architecture = var.lambda_architecture
 }
 
 data "local_file" "env_variables" {

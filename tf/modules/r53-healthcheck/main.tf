@@ -12,4 +12,5 @@ resource "aws_route53_health_check" "checker" {
     deploymentID = var.deploymentID
   }
   regions = var.health_check_regions
+  disabled = var.disabled
 }
