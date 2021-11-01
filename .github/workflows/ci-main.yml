@@ -39,7 +39,7 @@ jobs:
           go test ./... -v
       - name: run statick check
         run: |
-          go get honnef.co/go/tools/cmd/staticcheck
+          go install honnef.co/go/tools/cmd/staticcheck@latest
           staticcheck -checks "all" ./...
       - name: Build artefact
         env:
