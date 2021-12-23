@@ -3,9 +3,9 @@ data "local_file" "env_variables" {
 }
 
 locals {
-  env_variables = {
-    name = var.project_name,
+  # read JSON from the env value and add to the env_variables.
+  env_variables = merge ({
+    name = var.project_name
     terraform = true
-    someConfig = jsondecode(data.local_file.env_variables.content)["someConfig"]
-  }
+  }, {for k, v in jsondecode(data.local_file.env_variables.content): k => v})
 }
