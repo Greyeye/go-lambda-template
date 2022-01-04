@@ -21,6 +21,10 @@ resource "aws_apigatewayv2_route" "any" {
   api_id         = aws_apigatewayv2_api.apiLambda_private.id
   route_key      = "ANY /{proxy+}"
   target         = "integrations/${aws_apigatewayv2_integration.apiLambda_private.id}"
+
+#  authorization_type = "JWT"
+#  authorizer_id = resource.aws_apigatewayv2_authorizer.jwt
+#  authorization_scopes = "openid"
 }
 
 resource "aws_apigatewayv2_stage" "stage_name" {
@@ -62,3 +66,16 @@ resource "aws_apigatewayv2_api_mapping" "custom_path" {
   stage  = aws_apigatewayv2_stage.stage_name.id
   domain_name = aws_apigatewayv2_domain_name.custom_name.domain_name
 }
+
+#resource "aws_apigatewayv2_authorizer" "jwt" {
+#  api_id           = aws_apigatewayv2_api.apiLambda_private.id
+#  authorizer_type  = "JWT"
+#  identity_sources = ["$request.header.Authorization"]
+#  name             = "jwt authorizer"
+#
+#  jwt_configuration {
+#    audience = ["openid","proxy"]
+#    # token endpoint for auth0 or cognito
+#    issuer   = "https://${aws_cognito_user_pool.example.endpoint}"
+#  }
+#}
