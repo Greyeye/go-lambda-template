@@ -1,0 +1,10 @@
+provider "aws" {
+  region = "us-east-1"
+  profile = {{.awsCredProviderName}}   # e.g. "development"
+}
+
+provider "aws" {
+  alias  = "us-west-2"
+  region = "us-west-2"
+  profile = {{.awsCredProviderName}}   # e.g. "development"
+}
