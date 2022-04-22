@@ -8,18 +8,19 @@ on:
       - development
     paths:
       - 'lambda/**'
+      - 'pkg/**'
       - '.github/workflows/ci-dev.yml'
       - 'tf/development/**'
 
 concurrency: development_environment
-
+permissions:
+  id-token: write
+  contents: read
 jobs:
   run:
     name: Run
-#    env:
-#      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEPLOYMENT_DEVELOPMENT }}
-#      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEPLOYMENT_DEVELOPMENT }}
-#      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION_DEPLOYMENT_DEVELOPMENT }}
+    env:
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION_DEPLOYMENT_DEVELOPMENT }}
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
@@ -27,10 +28,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1.6.1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_TO_ASSUME_DEVELOPMENT }}
+          role-session-name: githubactionssession
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION_DEPLOYMENT_DEVELOPMENT }}
       - name: use golang
         uses: actions/setup-go@v2
         with:
           go-version: '^1.17.2'
+      - name: Configure git for private modules
+        env:
+          TOKEN: ${{ secrets.GIT_CLONE_TOKEN }}
+        run: |
+          git config --global url."https://${TOKEN}@github.com".insteadOf "https://github.com"
       - name: run vet
         run: |
           go vet ./...
@@ -40,7 +52,7 @@ jobs:
       - name: run statick check
         run: |
           go install honnef.co/go/tools/cmd/staticcheck@latest
-          staticcheck -checks "all" ./...
+          staticcheck -checks "all,-ST1000" ./...
       - name: Build artefact
         env:
           CGO_ENABLED: 0
@@ -50,18 +62,18 @@ jobs:
           cd lambda
           mkdir -p ../src
           go build -o ../src/bootstrap
-#      - name: use terraform
-#        uses: hashicorp/setup-terraform@v1
-#      - name: initialisation
-#        run: |
-#          cd tf/development
-#          terraform init
-#      - name: plan
-#        run: |
-#          cd tf/development
-#          terraform plan -no-color -var-file development.tfvars -out=out.tfplan
-#          terraform output
-#      - name: apply
-#        run: |
-#          cd tf/development
-#          terraform apply "out.tfplan"
+      - name: use terraform
+        uses: hashicorp/setup-terraform@v1
+      - name: initialisation
+        run: |
+          cd tf/development
+          terraform init
+      - name: plan
+        run: |
+          cd tf/development
+          terraform plan -no-color -var-file development.tfvars -out=out.tfplan
+          terraform output
+      - name: apply
+        run: |
+          cd tf/development
+          terraform apply "out.tfplan"
