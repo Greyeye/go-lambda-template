@@ -17,5 +17,6 @@ includes basic unit test sample.
 1. Github Actions can perform Terraform Deployment,
    make sure you setup IAM roles and trust github actions from AWS. 
    See (https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)
-2. Do not **FORK**, use it as template or just clone and detach. If you fork, you will not be able to set the repo as private.
+2. IAM role trust relationship must refer to OIDC token providers and right Conditions, please see ./docs/sampleIAMRoleTrustedPolicy.json
+3. Do not **FORK**, use it as template or just clone and detach. If you fork, you will not be able to set the repo as private.
 
