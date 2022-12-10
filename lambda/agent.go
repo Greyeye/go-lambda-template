@@ -6,7 +6,7 @@ import (
 )
 
 // getAgenthandler returns some data
-func (h *LambdaHandler) getAgenthandler(c *gin.Context) {
+func (l *LambdaHandler) getAgenthandler(c *gin.Context) {
 
 	agentName := c.Query("agentname")
 	// do something like call Database and get agent details, or perform transform data etc...
