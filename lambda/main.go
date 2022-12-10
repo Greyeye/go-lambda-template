@@ -4,15 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/Greyeye/go-lambda-template/pkg/awsclient"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/awslabs/aws-lambda-go-api-proxy/gorillamux"
-	"github.com/gorilla/mux"
+	"github.com/aws/aws-xray-sdk-go/xray"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"github.com/gin-gonic/gin"
+	gxr "github.com/oroshnivskyy/go-gin-aws-x-ray/xray"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -22,7 +24,7 @@ func main() {
 		logger.Error(err)
 		return
 	}
-	lambda.Start(lh.handler)
+	lambda.Start(lh.Handler)
 }
 
 var logger *zap.SugaredLogger
@@ -59,7 +61,7 @@ func InitLogger() {
 	logger.Debug("Debug Mode")
 }
 
-// NewLambdaHandler is a constructor to setup new lambda handler
+// NewLambdaHandler is a constructor to set up new lambda handler
 func NewLambdaHandler(opts ...func(*LambdaHandler)) (*LambdaHandler, error) {
 	lh := &LambdaHandler{}
 	for _, opt := range opts {
@@ -70,31 +72,39 @@ func NewLambdaHandler(opts ...func(*LambdaHandler)) (*LambdaHandler, error) {
 		return nil, errors.New("aws client init failed")
 	}
 
-	lh.gorillaMuxLambda = gorillamux.New(configRouter(lh))
+	lh.ginLambdaV2 = ginadapter.NewV2(configRouter(lh))
 
 	return lh, nil
 }
 
-func configRouter(lh *LambdaHandler) *mux.Router {
-	r := mux.NewRouter()
+func configRouter(lh *LambdaHandler) *gin.Engine {
+	// gin log print out mode
+	gin.SetMode("debug")
+	r := gin.New()
+	// Global middleware
+	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
+	// By default, gin.DefaultWriter = os.Stdout
+	r.Use(gin.Logger())
 
-	//some sample route
-	r.HandleFunc("/agent", lh.getAgenthandler).Queries("agentname", "{agentname}").Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/agent", lh.getAgenthandler).Methods(http.MethodGet, http.MethodOptions)
+	// Recovery middleware recovers from any panics and writes a 500 if there was one.
+	r.Use(gin.Recovery())
 
-	// R53 health check handler, this route must be outside of authentication
-	r.HandleFunc("/check", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("health check from: ", r.UserAgent())
-		w.WriteHeader(http.StatusOK)
-	}).Methods(http.MethodGet)
+	// xray middleware to provide wrapper service for XRAY context.
+	r.Use(gxr.Middleware(xray.NewDynamicSegmentNamer(os.Getenv("AWS_LAMBDA_FUNCTION_NAME"), "*.execute-api.ap-southeast-2.amazonaws.com")))
+	// API Gateway v2 adds staging prefix to the route (e.g. /development/sign)
+	// add group route that matches with the staging name variable.
+	// STAGING = "", is for SAM test
+	// STAGING = development is for UAT/DEV env.
+	// STAGING = main is for Production.
+	v := r.Group("/" + strings.ToLower(os.Getenv("STAGING")))
+	{
+		v.GET("/agent", lh.getAgenthandler)
+		r.GET("/check", func(c *gin.Context) {
+			logger.Info("health check from: ", c.Request.UserAgent())
+			c.Status(http.StatusNoContent)
+		})
+	}
 
-	// "any" page handler, will return JSON payload with error and HTTP 404 code
-	r.HandleFunc("/{any}", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(w, "{\"error\":\"page not found\"}")
-	}).Methods(http.MethodGet)
-
-	r.Use(mux.CORSMethodMiddleware(r))
 	return r
 }
 
@@ -115,5 +125,5 @@ func NewAWSClient(ctx context.Context) func(*LambdaHandler) {
 type LambdaHandler struct {
 	awsClient *awsclient.Clients
 	//someConfig  string
-	gorillaMuxLambda *gorillamux.GorillaMuxAdapter
+	ginLambdaV2 *ginadapter.GinLambdaV2
 }

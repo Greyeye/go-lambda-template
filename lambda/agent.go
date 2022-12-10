@@ -1,34 +1,29 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"net/http"
-	"net/url"
 )
 
 // getAgenthandler returns some data
-func (h *LambdaHandler) getAgenthandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token")
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-	requiredOptions := []string{"agentname"}
-	for _, v := range requiredOptions {
-		if _, ok := mux.Vars(r)[v]; !ok {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, "{\"error\":\"'"+v+"' is missing from query parameter\"}")
-			return
-		}
-	}
-	agentName, _ := url.QueryUnescape(mux.Vars(r)["agentname"])
+func (h *LambdaHandler) getAgenthandler(c *gin.Context) {
 
-	w.WriteHeader(http.StatusOK)
-	jsonResponse, _ := json.Marshal(struct {
+	agentName := c.Query("agentname")
+	// do something like call Database and get agent details, or perform transform data etc...
+	/*
+		e.g.
+			data, err := callMYSQL(agentName)
+		    if err != nil {
+				c.JSON(http.StatusInternalServerError gin.H{
+					"message": "no data",
+				}
+				return
+			}
+		This sample will return {"message": "no data"} when callMYSQL fail.
+	*/
+	jsonResponse := struct {
 		AgentName string
-	}{AgentName: agentName})
-	fmt.Fprint(w, string(jsonResponse))
+	}{AgentName: agentName}
+
+	c.JSON(http.StatusOK, jsonResponse)
 }

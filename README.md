@@ -20,3 +20,5 @@ includes basic unit test sample.
 2. IAM role trust relationship must refer to OIDC token providers and right Conditions, please see ./docs/sampleIAMRoleTrustedPolicy.json
 3. Do not **FORK**, use it as template or just clone and detach. If you fork, you will not be able to set the repo as private.
 
+## Running local tests
+You can now run the lambda locally using AWS SAM. please see ./sam folder.  

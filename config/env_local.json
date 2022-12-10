@@ -1,0 +1,6 @@
+{
+  "Parameters": {
+    "GIN_MODE": "debug",
+    "someConfig": "some env value"
+  }
+}

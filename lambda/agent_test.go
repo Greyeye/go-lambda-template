@@ -1,59 +1,78 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
-	"github.com/aws/aws-lambda-go/events"
-
+	"github.com/Greyeye/go-lambda-template/pkg/awsclient"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
-func TestGetAgenthandler(t *testing.T) {
-
-	var tests = []struct {
-		eventInput            events.APIGatewayProxyRequest
-		queryParametersExists bool
-		expectedStatusCode    int
-		expectedBody          string
+func TestLambdaHandler_getAgenthandler(t *testing.T) {
+	type fields struct {
+		awsClient   *awsclient.Clients
+		ginLambdaV2 *ginadapter.GinLambdaV2
+	}
+	type args struct {
+		u      string
+		method string
+	}
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		expected string
 	}{
 		{
-			events.APIGatewayProxyRequest{
-				Path:                  "/agent",
-				HTTPMethod:            http.MethodGet,
-				QueryStringParameters: map[string]string{"agentname": "superman"},
+			name: "normal ok request",
+			fields: fields{
+				awsClient:   &awsclient.Clients{},
+				ginLambdaV2: &ginadapter.GinLambdaV2{},
 			},
-			true,
-			200,
-			"{\"AgentName\":\"superman\"}",
-		},
-		{
-			events.APIGatewayProxyRequest{
-				Path:                  "/agent",
-				HTTPMethod:            http.MethodGet,
-				QueryStringParameters: nil,
+			args: args{
+				u:      "http://localhost/agent?agentname=test",
+				method: "GET",
 			},
-			false,
-			400,
-			"{\"error\":\"'agentname' is missing from query parameter\"}",
+			expected: "test",
 		},
 	}
-	for _, test := range tests {
-
-		lh, _ := NewLambdaHandler(NewAWSClient(context.Background()))
-
-		ev := test.eventInput
-		response, err := lh.handler(context.Background(), ev)
-		agent := &struct{ AgentName string }{}
-		json.Unmarshal([]byte(response.Body), agent)
-		assert.Nil(t, err)
-		assert.Equal(t, test.expectedStatusCode, response.StatusCode)
-		assert.Equal(t, test.expectedBody, response.Body)
-		if test.queryParametersExists == true {
-			assert.Equal(t, "superman", agent.AgentName)
-		}
-
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &LambdaHandler{
+				awsClient:   tt.fields.awsClient,
+				ginLambdaV2: tt.fields.ginLambdaV2,
+			}
+			c, w := MockGin(tt.args.u, tt.args.method)
+			h.getAgenthandler(c)
+			var got map[string]interface{}
+			err := json.Unmarshal(w.Body.Bytes(), &got)
+			assert.Equal(t, tt.expected, got["AgentName"])
+			assert.Nil(t, err)
+		})
 	}
+}
 
+func mockURLParser(mockURL string) *url.URL {
+	u, err := url.Parse(mockURL)
+	if err != nil {
+		return nil
+	}
+	return u
+}
+
+func MockGin(mockURL, method string) (*gin.Context, *httptest.ResponseRecorder) {
+	w := httptest.NewRecorder()
+	gin.SetMode(gin.TestMode)
+	ctx, _ := gin.CreateTestContext(w)
+	ctx.Request = &http.Request{
+		Method: method,
+		Header: make(http.Header),
+		URL:    mockURLParser(mockURL),
+	}
+	ctx.Request.Header.Set("Content-Type", "application/json")
+	return ctx, w
 }

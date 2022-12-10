@@ -3,3 +3,4 @@
 /lambda/coverage.out
 /tf/development/out.tfplan
 /tf/development/.terraform/
+/sam/bootstrap
