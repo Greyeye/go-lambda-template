@@ -5,8 +5,8 @@ import (
 	"net/http"
 )
 
-// getAgenthandler returns some data
-func (l *LambdaHandler) getAgenthandler(c *gin.Context) {
+// getAgentHandler returns some data
+func (l *LambdaHandler) getAgentHandler(c *gin.Context) {
 
 	agentName := c.Query("agentname")
 	// do something like call Database and get agent details, or perform transform data etc...

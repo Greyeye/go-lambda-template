@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/Greyeye/go-lambda-template/pkg/awsclient"
+	"github.com/Greyeye/go-lambda-template/internal/awsclient"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -47,7 +47,7 @@ func TestLambdaHandler_getAgenthandler(t *testing.T) {
 				ginLambdaV2: tt.fields.ginLambdaV2,
 			}
 			c, w := MockGin(tt.args.u, tt.args.method)
-			h.getAgenthandler(c)
+			h.getAgentHandler(c)
 			var got map[string]interface{}
 			err := json.Unmarshal(w.Body.Bytes(), &got)
 			assert.Equal(t, tt.expected, got["AgentName"])

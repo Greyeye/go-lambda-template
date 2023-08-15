@@ -8,7 +8,7 @@ on:
       - main
     paths:
       - 'lambda/**'
-      - 'pkg/**'
+      - 'internal/**'
       - '.github/workflows/ci-main.yml'
       - 'tf/main/**'
 
