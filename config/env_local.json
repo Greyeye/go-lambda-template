@@ -1,6 +1,7 @@
 {
   "Parameters": {
     "GIN_MODE": "debug",
-    "someConfig": "some env value"
+    "someConfig": "some env value",
+    "LogLevel": "debug"
   }
 }

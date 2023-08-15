@@ -2,15 +2,15 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"github.com/Greyeye/go-lambda-template/pkg/awsclient"
+	"github.com/Greyeye/go-lambda-template/internal/awsclient"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-xray-sdk-go/xray"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 	gxr "github.com/oroshnivskyy/go-gin-aws-x-ray/xray"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"log"
 	"net/http"
 	"os"
@@ -36,22 +36,28 @@ func InitLogger() {
 	if LogLevel == "" {
 		LogLevel = "info"
 	}
-	rawJSON := []byte(`{
-	  "level": "` + LogLevel + `",
-	  "encoding": "json",
-	  "errorOutputPaths": ["stderr"],
-	  "outputPaths": ["stdout", "/dev/null"],
-	  "encoderConfig": {
-	    "messageKey": "message",
-	    "levelKey": "level",
-	    "levelEncoder": "lowercase"
-	  }
-	}`)
 
-	var cfg zap.Config
-	if err := json.Unmarshal(rawJSON, &cfg); err != nil {
+	var level zapcore.Level
+	err := level.UnmarshalText([]byte(LogLevel))
+	if err != nil {
 		panic(err)
 	}
+	cfg := zap.Config{
+		Level:            zap.NewAtomicLevelAt(level),
+		Encoding:         "json",
+		ErrorOutputPaths: []string{"stderr"},
+		OutputPaths:      []string{"stdout", "/dev/null"},
+		EncoderConfig: zapcore.EncoderConfig{
+			MessageKey:   "message",
+			LevelKey:     "level",
+			TimeKey:      "time",
+			CallerKey:    "caller",
+			EncodeLevel:  zapcore.LowercaseLevelEncoder,
+			EncodeCaller: zapcore.FullCallerEncoder,
+			EncodeTime:   zapcore.ISO8601TimeEncoder,
+		},
+	}
+
 	initLogger, err := cfg.Build()
 	if err != nil {
 		panic(err)
