@@ -104,7 +104,7 @@ func configRouter(lh *LambdaHandler) *gin.Engine {
 	// STAGING = main is for Production.
 	v := r.Group("/" + strings.ToLower(os.Getenv("STAGING")))
 	{
-		v.GET("/agent", lh.getAgenthandler)
+		v.GET("/agent", lh.getAgentHandler)
 		r.GET("/check", func(c *gin.Context) {
 			logger.Info("health check from: ", c.Request.UserAgent())
 			c.Status(http.StatusNoContent)
